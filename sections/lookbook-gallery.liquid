@@ -1,0 +1,310 @@
+{{ 'lookbook-gallery.css' | asset_url | stylesheet_tag }}
+{%- style -%}
+  #shopify-section-{{ section.id }} {
+    margin-top: {{- section.settings.margin-top -}}px;
+    margin-bottom: {{- section.settings.margin-bottom -}}px;
+  }
+{%- endstyle -%}
+
+<div class="page-width">
+  <div class="lookbook-gallery">
+    <div class="lookbook-gallery-container">
+      {% for lookbook_blocks in section.blocks %}
+        {% assign productDetails = all_products[lookbook_blocks.settings.select_product] %}
+        {% case lookbook_blocks.type %}
+          {% when 'gallery' %}
+            <div class="lookbook-gallery-item swiper">
+              <div class="lookbook-gallery-item-wrap swiper-wrapper">
+                <div class="swiper-slide">
+                  <div
+                    class="
+                      lookbook-gallery-slide-media {%- if lookbook_blocks.settings.change-image-on-hover %}
+                      lookbook-gallery-slide-media-hover{%- endif -%}
+                    "
+                  >
+                    {% if lookbook_blocks.settings.select_product != blank %}
+                      <img
+                        src="{{- productDetails.featured_image | image_url: width: 300, crop: 'center' -}}"
+                        alt="{{- productDetails.alt -}}"
+                        loading="lazy"
+                        ,
+                        class="{%- if productDetails.images.size > 1 -%} lookbook-first-image {%- endif -%} "
+                      >
+                      {%- if lookbook_blocks.settings['change-image-on-hover'] -%}
+                        {% if productDetails.images.size > 1 %}
+                          <img
+                            src="{{- productDetails.images.last | image_url: width: 300, crop: 'center' -}}"
+                            alt="{{- productDetails.images.last.alt | escape -}}"
+                            loading="lazy"
+                            class="lookbook-secondary-image"
+                          >
+                        {% endif %}
+                      {% endif %}
+                    {% else %}
+                      {{- 'product-apparel-1' | placeholder_svg_tag: 'placeholder-svg' -}}
+                    {% endif %}
+                  </div>
+                  <div class="lookbook-gallery-slide-details">
+                    <h3>
+                      {%- if productDetails.title != blank -%}
+                        {{- productDetails.title | escape -}}
+                      {%- else -%}
+                        {{- 'onboarding.product_title' | t -}}
+                      {% endif %}
+                    </h3>
+                    <div class="lookbook-pricing">
+                      {%- assign originalPrice = productDetails.selected_or_first_available_variant.compare_at_price -%}
+                      {% if originalPrice != blank %}
+                        {%- render 'price',
+                          product: productDetails,
+                          use_variant: true,
+                          show_badges: true,
+                          price_class: 'price--large'
+                        -%}
+                      {% else %}
+                        {% assign placeHolderPrice = 19.99 | times: 100.0 %}
+                        <span>{{ placeHolderPrice | money_with_currency }}</span>
+                      {% endif %}
+                    </div>
+                    <!-- Add To card -->
+                    {%- if lookbook_blocks.settings['quick-add-to-cart-button'] -%}
+                      <div class="lookbook-addtocard product-form">
+                        {% if productDetails != blank %}
+                          {% form 'product',
+                            productDetails,
+                            class: 'form',
+                            novalidate: 'novalidate',
+                            data-type: 'add-to-cart-form'
+                          %}
+                            <input
+                              id="product-id"
+                              type="hidden"
+                              name="id"
+                              value="{{ productDetails.selected_or_first_available_variant.id }}"
+                              ,
+                              class="product-variant-id"
+                              ,
+                            >
+                            {% if productDetails.selected_or_first_available_variant.available %}
+                              <div class="lookbook-addtocard-btn">
+                                <input type="submit" value="Add to cart" class="product-form__submit button">
+                              </div>
+                            {% else %}
+                              <div class="lookbook-addtocard-btn">
+                                <input type="submit" value="Out of stock" disabled>
+                              </div>
+                            {% endif %}
+                          {% endform %}
+                        {% else %}
+                          <div class="lookbook-addtocard-btn">
+                            <input
+                              type="submit"
+                              value="Out of stock"
+                              class="product-form__submit button button--full-width button--primary"
+                              disabled
+                            >
+                          </div>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                    <!-- Add To card ends -->
+                  </div>
+                </div>
+                <!-- Second slide -->
+                {% if lookbook_blocks.settings['select-image'] != blank %}
+                  <div class="swiper-slide second-swiper-slide">
+                    <div class="lookbook-gallery-slide-media">
+                      {% if lookbook_blocks.settings.select_product != blank %}
+                        <img
+                          src="{{- lookbook_blocks.settings.select-image | image_url: width: 300, crop: 'center' -}}"
+                          alt="{{- lookbook_blocks.settings.select-image.alt -}}"
+                          loading="lazy"
+                        >
+                      {% else %}
+                        {{ 'product-apparel-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                      {% endif %}
+                    </div>
+                    <div class="lookbook-gallery-slide-details">
+                      <h3>
+                        {%- if productDetails.title != blank -%}
+                          {{ productDetails.title | escape }}
+                        {%- else -%}
+                          {{ 'onboarding.product_title' | t }}
+                        {% endif %}
+                      </h3>
+                      <div class="lookbook-pricing">
+                        {%- assign originalPrice = productDetails.selected_or_first_available_variant.compare_at_price -%}
+                        {% if originalPrice != blank %}
+                          {%- render 'price',
+                            product: productDetails,
+                            use_variant: true,
+                            show_badges: true,
+                            price_class: 'price--large'
+                          -%}
+                        {% else %}
+                          {% assign placeHolderPrice = 19.99 | times: 100.0 %}
+                          <span>{{ placeHolderPrice | money_with_currency }}</span>
+                        {% endif %}
+                      </div>
+                      <!-- Add To card -->
+                      {%- if lookbook_blocks.settings['quick-add-to-cart-button'] -%}
+                        <div class="lookbook-addtocard product-form">
+                          {% if productDetails != blank %}
+                            {% form 'product',
+                              productDetails,
+                              class: 'form',
+                              novalidate: 'novalidate',
+                              data-type: 'add-to-cart-form'
+                            %}
+                              <input
+                                id="product-id"
+                                type="hidden"
+                                name="id"
+                                value="{{ productDetails.selected_or_first_available_variant.id }}"
+                                ,
+                                class="product-variant-id"
+                                ,
+                              >
+                              {% if productDetails.selected_or_first_available_variant.available %}
+                                <div class="lookbook-addtocard-btn">
+                                  <input type="submit" value="Add to cart" class="product-form__submit button">
+                                </div>
+                              {% else %}
+                                <div class="lookbook-addtocard-btn">
+                                  <input type="submit" value="Out of stock" disabled>
+                                </div>
+                              {% endif %}
+                            {% endform %}
+                          {% else %}
+                            <div class="lookbook-addtocard-btn">
+                              <input type="submit" value="Out of stock" disabled>
+                            </div>
+                          {% endif %}
+                        </div>
+                      {% endif %}
+                      <!-- Add To card ends -->
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+              <!-- Swiper-wrapper-ends -->
+              <div class="swiper-pagination {%- if section.settings.slider_visual == "dots" %} dots {%- else %} square {% endif -%}"></div>
+            </div>
+        {% endcase %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+    const swiper = new Swiper('.swiper', {
+    // Optional parameters
+    loop: true,
+
+    // If we need pagination
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true,
+    },
+    // And if we need scrollbar
+    scrollbar: {
+      el: '.swiper-scrollbar',
+    },
+  });
+</script>
+{% schema %}
+{
+  "name": "t:sections.lookbook_gallery.name",
+  "class": "lookbook-gallery-section",
+  "tag": "section",
+  "max_blocks": 12,
+  "settings": [
+     {
+      "type": "select",
+      "id": "slider_visual",
+      "options": [
+        {
+          "value": "dots",
+          "label": "t:sections.slideshow.settings.slider_visual.options__2.label"
+        },
+        {
+          "value": "square",
+          "label": "t:sections.slideshow.settings.slider_visual.options__4.label"
+        }
+      ],
+      "default": "dots",
+      "label": "t:sections.slideshow.settings.slider_visual.label"
+    },
+    {
+      "type": "range",
+      "id": "margin-top",
+      "label": "t:sections.lookbook_gallery.settings.top_margin.label",
+      "min": 5,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "margin-bottom",
+      "label": "t:sections.lookbook_gallery.settings.bottom_margin.label",
+      "min": 5,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    }
+  ],
+  "blocks":[
+    {
+      "type": "gallery",
+      "name": "t:sections.lookbook_gallery.blocks.gallery.name",
+      "settings":[
+        {
+          "type": "product",
+          "id": "select_product",
+          "label": "t:sections.lookbook_gallery.blocks.gallery.settings.select_product.label"
+        },
+        {
+          "type": "image_picker",
+          "id": "select-image",
+          "label": "t:sections.lookbook_gallery.blocks.gallery.settings.select_image.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "change-image-on-hover",
+          "label": "t:sections.lookbook_gallery.blocks.gallery.settings.change_image_on_hover.label",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "quick-add-to-cart-button",
+          "label":"t:sections.lookbook_gallery.blocks.gallery.settings.quick_add_to_cart.label",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "presets":[
+    {
+      "name": "t:sections.lookbook_gallery.presets.name",
+      "blocks": [
+        {
+          "type": "gallery"
+        },
+         {
+          "type": "gallery"
+        },
+         {
+          "type": "gallery"
+        },
+         {
+          "type": "gallery"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
